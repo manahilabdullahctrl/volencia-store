@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Details | VOLENCIA</title>
+
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+
+<header>
+  <div class="logo">VOLENCIA</div>
+
+  <nav>
+    <a href="../index.html">Home</a>
+    <a href="shop.html">Shop</a>
+    <a href="cart.html">Cart 🛒</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+</header>
+
+<!-- PRODUCT SECTION -->
+<section class="product-detail">
+
+  <img id="pImage" src="" alt="Product Image">
+
+  <h1 id="pName">Loading...</h1>
+
+  <h2 id="pPrice"></h2>
+
+  <p id="pDesc"></p>
+
+  <button id="addBtn">Add to Cart 🛒</button>
+
+</section>
+
+<script src="../js/script.js"></script>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+
+const name = params.get("name") || "No Product Name";
+const price = params.get("price") || "0";
+const image = params.get("image") || "";
+const desc = params.get("desc") || "";
+
+// SHOW DATA
+document.getElementById("pName").innerText = name;
+document.getElementById("pPrice").innerText = "Rs " + price;
+document.getElementById("pDesc").innerText = desc;
+
+// IMAGE SAFETY
+const imgEl = document.getElementById("pImage");
+imgEl.src = image || "../assets/no-image.png";
+imgEl.alt = name;
+
+// ADD TO CART
+document.getElementById("addBtn").onclick = function () {
+
+  addToCart(name, Number(price), image);
+
+  alert("🛒 Product added to cart!");
+
+};
+</script>
+
+</body>
+</html>

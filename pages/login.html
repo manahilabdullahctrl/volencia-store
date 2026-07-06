@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login | VOLENCIA</title>
+
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+
+<div style="max-width:400px;margin:100px auto;text-align:center;">
+
+  <h2>Admin Login</h2>
+
+  <input id="username" placeholder="Username"
+    style="width:100%;padding:10px;margin:10px 0;">
+
+  <input id="password" type="password" placeholder="Password"
+    style="width:100%;padding:10px;margin:10px 0;">
+
+  <button onclick="login()" style="width:100%;padding:10px;">
+    Login
+  </button>
+
+  <p id="msg" style="color:red;"></p>
+
+</div>
+
+<script>
+function login() {
+
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value.trim();
+
+  // ✅ SAME username & password (as you asked)
+  const correctUsername = "abdullaahh";
+  const correctPassword = "abdullahmanahil";
+
+  if (username === correctUsername && password === correctPassword) {
+
+    localStorage.setItem("admin", "true");
+
+    window.location.href = "admin.html";
+
+  } else {
+    document.getElementById("msg").innerText =
+      "❌ Wrong username or password!";
+  }
+}
+</script>
+
+</body>
+</html>

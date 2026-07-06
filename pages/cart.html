@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cart | VOLENCIA</title>
+
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+
+<header>
+  <div class="logo">VOLENCIA</div>
+
+  <nav>
+    <a href="../index.html">Home</a>
+    <a href="shop.html">Shop</a>
+    <a href="wishlist.html">Wishlist ❤️</a>
+    <a href="cart.html">Cart 🛒</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <h1>Your Shopping Cart</h1>
+  <p>Review your selected products</p>
+</section>
+
+<!-- CART ITEMS -->
+<section class="products" id="cartItems">
+  <!-- JS loads cart here -->
+</section>
+
+<!-- TOTAL + CHECKOUT -->
+<div style="text-align:center; margin:30px;">
+  <h2 id="cartTotal">Total: Rs 0</h2>
+
+  <button id="checkoutBtn" class="buy-btn" onclick="checkout()">
+    Checkout on WhatsApp
+  </button>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+
+  <div class="footer-container">
+
+    <div class="footer-box">
+      <h3>VOLENCIA STORE</h3>
+      <p>Luxury Fashion • Beauty • Accessories</p>
+    </div>
+
+    <div class="footer-box">
+      <h3>Quick Links</h3>
+      <a href="../index.html">Home</a>
+      <a href="shop.html">Shop</a>
+      <a href="cart.html">Cart</a>
+      <a href="contact.html">Contact</a>
+    </div>
+
+    <div class="footer-box">
+      <h3>Contact</h3>
+      <p>Email: mee109m@gmail.com</p>
+      <p>WhatsApp: 03079489816</p>
+    </div>
+
+    <div class="footer-box">
+      <h3>Follow Us</h3>
+      <a href="https://instagram.com" target="_blank">Instagram</a>
+      <a href="https://tiktok.com" target="_blank">TikTok</a>
+    </div>
+
+  </div>
+
+  <div class="footer-bottom">
+    © 2026 VOLENCIA STORE | All Rights Reserved
+  </div>
+
+</footer>
+
+<!-- JS -->
+<script src="../js/script.js"></script>
+
+<!-- WhatsApp Floating Button -->
+<a href="https://wa.me/923079489816" target="_blank" class="whatsapp-btn">
+  💬
+</a>
+
+<!-- ✅ CHECKOUT FUNCTION (ADD THIS IF NOT IN JS) -->
+<script>
+function checkout() {
+
+  let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+  if (cart.length === 0) {
+    alert("Cart is empty!");
+    return;
+  }
+
+  let message = "🛍️ ORDER - VOLENCIA\n\n";
+
+  let total = 0;
+
+  cart.forEach(item => {
+    message += `• ${item.name} - Rs ${item.price}\n`;
+    total += Number(item.price);
+  });
+
+  message += `\n💰 Total: Rs ${total}\n`;
+
+  message += `\n👤 Name:\n📞 Phone:\n📍 Address:\n🏙️ City:`;
+
+  window.open(
+    "https://wa.me/923079489816?text=" + encodeURIComponent(message),
+    "_blank"
+  );
+}
+</script>
+
+</body>
+</html>

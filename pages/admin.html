@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel | VOLENCIA</title>
+
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="https://upload-widget.cloudinary.com/global/all.js"></script>
+</head>
+
+<body>
+
+<!-- SECURITY -->
+<script>
+if (localStorage.getItem("admin") !== "true") {
+  window.location.href = "login.html";
+}
+</script>
+
+<header>
+  <div class="logo">ADMIN PANEL</div>
+  <button onclick="logout()">Logout</button>
+</header>
+
+<section style="padding:20px;">
+
+  <h2>Add Product</h2>
+
+  <input id="name" type="text" placeholder="Product Name">
+  <br><br>
+
+  <input id="price" type="number" placeholder="Price">
+  <br><br>
+
+  <textarea id="desc" rows="5" placeholder="Product Description" style="width:300px;"></textarea>
+
+  <br><br>
+
+  <h3>Upload Product Images (Max 10)</h3>
+
+  <button onclick="uploadImages()">📷 Upload Images</button>
+
+  <br><br>
+
+  <div id="imgPreview" style="display:flex;flex-wrap:wrap;gap:10px;"></div>
+
+  <br>
+
+  <button onclick="addProduct()" style="background:green;color:white;padding:12px 20px;">
+    ➕ Add Product
+  </button>
+
+</section>
+
+<hr>
+
+<section style="padding:20px;">
+  <h2>Products List</h2>
+  <div id="adminList"></div>
+</section>
+<script>
+
+let products = JSON.parse(localStorage.getItem("products")) || [];
+let uploadedImages = [];
+
+/* =========================
+   UPLOAD IMAGES
+========================= */
+function uploadImages() {
+
+  uploadedImages = [];
+  document.getElementById("imgPreview").innerHTML = "";
+
+  cloudinary.openUploadWidget({
+    cloudName: "futxwwl3",
+    uploadPreset: "volencia",
+    sources: ["local", "camera"],
+    multiple: true,
+    maxFiles: 10
+  }, (error, result) => {
+
+    if (!error && result && result.event === "success") {
+
+      uploadedImages.push(result.info.secure_url);
+
+      document.getElementById("imgPreview").innerHTML += `
+        <img src="${result.info.secure_url}" width="90"
+        style="border-radius:8px;margin:5px;">
+      `;
+    }
+
+  });
+}
+
+/* =========================
+   ADD PRODUCT
+========================= */
+function addProduct() {
+
+  const name = document.getElementById("name").value.trim();
+  const price = document.getElementById("price").value.trim();
+  const desc = document.getElementById("desc").value.trim();
+
+  if (!name || !price || !desc || uploadedImages.length === 0) {
+    alert("Please fill all fields and upload images");
+    return;
+  }
+
+  products.push({
+    name,
+    price,
+    desc,
+    images: uploadedImages
+  });
+
+  localStorage.setItem("products", JSON.stringify(products));
+
+  showProducts();
+  clearForm();
+
+  alert("✅ Product Added Successfully!");
+}
+
+/* =========================
+   SHOW PRODUCTS
+========================= */
+function showProducts() {
+
+  const box = document.getElementById("adminList");
+  box.innerHTML = "";
+
+  if (products.length === 0) {
+    box.innerHTML = `
+      <div class="card">
+        <h3>No Products Found</h3>
+        <p>Add your first product</p>
+      </div>
+    `;
+    return;
+  }
+
+  products.forEach((p, i) => {
+
+    let imgs = "";
+
+    (p.images || []).forEach(img => {
+      imgs += `<img src="${img}" width="60"
+      style="margin:3px;border-radius:5px;">`;
+    });
+
+    box.innerHTML += `
+      <div class="card">
+
+        <h3>${p.name}</h3>
+        <p>${p.desc}</p>
+        <p><b>Rs ${p.price}</b></p>
+
+        <div style="display:flex;flex-wrap:wrap;">
+          ${imgs}
+        </div>
+
+        <button onclick="deleteProduct(${i})"
+        style="background:red;color:white;margin-top:10px;">
+          ❌ Delete Product
+        </button>
+
+      </div>
+    `;
+  });
+}
+
+/* =========================
+   DELETE PRODUCT
+========================= */
+function deleteProduct(i) {
+
+  if (!confirm("Are you sure you want to delete this product?")) return;
+
+  products.splice(i, 1);
+
+  localStorage.setItem("products", JSON.stringify(products));
+
+  showProducts();
+}
+
+/* =========================
+   CLEAR FORM
+========================= */
+function clearForm() {
+
+  document.getElementById("name").value = "";
+  document.getElementById("price").value = "";
+  document.getElementById("desc").value = "";
+
+  document.getElementById("imgPreview").innerHTML = "";
+
+  uploadedImages = [];
+}
+
+/* =========================
+   LOGOUT
+========================= */
+function logout() {
+  localStorage.removeItem("admin");
+  window.location.href = "login.html";
+}
+
+/* INIT */
+showProducts();
+
+</script>
+
+</body>
+</html>
