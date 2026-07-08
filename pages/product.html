@@ -1,70 +1,281 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Product Details | VOLENCIA</title>
 
-  <link rel="stylesheet" href="../css/style.css">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Product Details | VOLENCIA</title>
+
+<link rel="stylesheet" href="../css/style.css">
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 </head>
+
 
 <body>
 
-<header>
-  <div class="logo">VOLENCIA</div>
 
-  <nav>
-    <a href="../index.html">Home</a>
-    <a href="shop.html">Shop</a>
-    <a href="cart.html">Cart 🛒</a>
-    <a href="contact.html">Contact</a>
-  </nav>
+<header>
+
+<div class="logo">VOLENCIA</div>
+
+<nav>
+
+<a href="../index.html">Home</a>
+<a href="shop.html">Shop</a>
+<a href="cart.html">Cart 🛒</a>
+<a href="contact.html">Contact</a>
+
+</nav>
+
 </header>
 
-<!-- PRODUCT SECTION -->
+
+
 <section class="product-detail">
 
-  <img id="pImage" src="" alt="Product Image">
 
-  <h1 id="pName">Loading...</h1>
+<div class="slider">
 
-  <h2 id="pPrice"></h2>
+<button id="prevBtn" onclick="prevImage()">❮</button>
 
-  <p id="pDesc"></p>
+<img id="pImage" src="" alt="Product Image">
 
-  <button id="addBtn">Add to Cart 🛒</button>
+<button id="nextBtn" onclick="nextImage()">❯</button>
+
+</div>
+
+
+
+<div id="thumbnailBox" class="thumbnail-container"></div>
+
+
+
+<h1 id="pName">
+Loading...
+</h1>
+
+
+<h2 id="pPrice"></h2>
+
+
+<p id="pDesc"></p>
+
+
+
+<button id="addBtn">
+🛒 Add to Cart
+</button>
+
+
 
 </section>
 
+
+
+
+<script src="../js/supabase.js"></script>
+
 <script src="../js/script.js"></script>
 
+
+
 <script>
+let allImages = [];
+let currentImage = 0;
+
+async function loadProduct(){
+
+
 const params = new URLSearchParams(window.location.search);
 
-const name = params.get("name") || "No Product Name";
-const price = params.get("price") || "0";
-const image = params.get("image") || "";
-const desc = params.get("desc") || "";
+const id = params.get("id");
 
-// SHOW DATA
-document.getElementById("pName").innerText = name;
-document.getElementById("pPrice").innerText = "Rs " + price;
-document.getElementById("pDesc").innerText = desc;
 
-// IMAGE SAFETY
-const imgEl = document.getElementById("pImage");
-imgEl.src = image || "../assets/no-image.png";
-imgEl.alt = name;
 
-// ADD TO CART
-document.getElementById("addBtn").onclick = function () {
+if(!id){
 
-  addToCart(name, Number(price), image);
+document.getElementById("pName").innerText =
+"No Product Found";
 
-  alert("🛒 Product added to cart!");
+return;
+
+}
+
+
+
+const {data,error}=await supabaseClient
+
+.from("products")
+
+.select("*")
+
+.eq("id",id)
+
+.single();
+
+
+
+if(error){
+
+console.log(error);
+
+document.getElementById("pName").innerText =
+"Product Not Found";
+
+return;
+
+}
+
+
+
+document.getElementById("pName").innerText =
+data.name;
+
+
+document.getElementById("pPrice").innerText =
+"Rs " + data.price;
+
+
+document.getElementById("pDesc").innerText =
+data.description;
+
+
+
+// MAIN IMAGE
+
+document.getElementById("pImage").src =
+data.image;
+console.log("IMAGE:", data.image);
+console.log("IMAGES:", data.images);
+
+
+// ALL IMAGES
+
+const thumbnailBox =
+document.getElementById("thumbnailBox");
+
+
+thumbnailBox.innerHTML="";
+
+
+
+if(Array.isArray(data.images) && data.images.length>0){
+
+allImages = data.images;
+
+}else{
+
+allImages = [data.image];
+
+}
+
+currentImage = 0;
+
+document.getElementById("pImage").src = allImages[0];
+
+
+
+
+allImages.forEach(img=>{
+
+
+thumbnailBox.innerHTML +=
+
+`
+
+<img 
+src="${img}"
+onclick="changeImage('${img}')"
+style="
+width:80px;
+height:80px;
+object-fit:cover;
+cursor:pointer;
+border-radius:8px;
+margin:5px;
+">
+
+`;
+
+
+});
+
+
+
+
+
+document.getElementById("addBtn").onclick=function(){
+
+
+addToCart(
+
+data.name,
+
+data.price,
+
+data.image
+
+);
+
 
 };
+
+
+
+}
+
+
+
+
+function changeImage(img){
+
+currentImage = allImages.indexOf(img);
+
+document.getElementById("pImage").src = img;
+
+}
+
+function nextImage(){
+
+currentImage++;
+
+if(currentImage >= allImages.length){
+
+currentImage = 0;
+
+}
+
+document.getElementById("pImage").src = allImages[currentImage];
+
+}
+
+function prevImage(){
+
+currentImage--;
+
+if(currentImage < 0){
+
+currentImage = allImages.length - 1;
+
+}
+
+document.getElementById("pImage").src = allImages[currentImage];
+
+}
+
+
+
+loadProduct();
+
+
 </script>
 
+
+
 </body>
+
 </html>

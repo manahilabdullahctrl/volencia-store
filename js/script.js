@@ -1,26 +1,42 @@
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
-let products = JSON.parse(localStorage.getItem("products")) || [];
+let wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
+let products = [];
+
 
 /* =========================
    ADD TO CART
 ========================= */
+
 function addToCart(name, price, image) {
 
-  cart.push({ name, price, image });
+  cart.push({
+    name:name,
+    price:price,
+    image:image
+  });
 
-  localStorage.setItem("cart", JSON.stringify(cart));
+  localStorage.setItem(
+    "cart",
+    JSON.stringify(cart)
+  );
 
   updateCartCount();
 
   alert("🛒 Product added to cart!");
+
 }
 
-/* =========================
-   BUY NOW (WHATSAPP)
-========================= */
-function buyNow(name, price) {
 
-  const message = `🛍️ NEW ORDER - VOLENCIA
+
+
+/* =========================
+   BUY NOW
+========================= */
+
+function buyNow(name, price){
+
+const message =
+`🛍️ NEW ORDER - VOLENCIA
 
 Product: ${name}
 Price: Rs ${price}
@@ -31,181 +47,397 @@ Price: Rs ${price}
 🏙️ City:
 📝 Note:`;
 
-  window.open(
-    "https://wa.me/923079489816?text=" + encodeURIComponent(message),
-    "_blank"
-  );
+
+window.open(
+"https://wa.me/923079489816?text="+encodeURIComponent(message),
+"_blank"
+);
+
 }
+
+
+
 
 /* =========================
    CART COUNT
 ========================= */
-function updateCartCount() {
 
-  const el = document.getElementById("cartCount");
+function updateCartCount(){
 
-  if (el) el.innerText = cart.length;
+const count=document.getElementById("cartCount");
+
+if(count){
+
+count.innerText=cart.length;
+
 }
+
+}
+
+
+
 
 /* =========================
-   LOAD PRODUCTS (MULTI IMAGE SLIDER)
+   LOAD PRODUCTS FROM SUPABASE
 ========================= */
-function loadProducts() {
 
-  const box = document.getElementById("productList");
-  if (!box) return;
+async function loadProducts(){
 
-  products = JSON.parse(localStorage.getItem("products")) || [];
 
-  box.innerHTML = "";
+const box=document.getElementById("productList");
 
-  products.forEach((p, i) => {
 
-    const images = (p.images && p.images.length)
-      ? p.images
-      : [p.image];
+if(!box) return;
 
-    let imgHTML = "";
 
-    images.forEach((img, index) => {
-      imgHTML += `
-        <img src="${img}" class="product-img ${index === 0 ? "active" : ""}">
-      `;
-    });
 
-    box.innerHTML += `
-      <div class="card">
+const {data,error}=await supabaseClient
 
-        <div class="slider" data-index="0">
+.from("products")
 
-          ${imgHTML}
+.select("*")
 
-          ${images.length > 1 ? `
-            <button onclick="changeImage(this, -1)">❮</button>
-            <button onclick="changeImage(this, 1)">❯</button>
-          ` : ""}
+.order("created_at",{ascending:false});
 
-        </div>
 
-        <h3>${p.name}</h3>
-        <p>${p.desc}</p>
-        <p><b>Rs ${p.price}</b></p>
 
-        <button onclick="addToCart(\`${p.name}\`, ${p.price}, \`${images[0]}\`)">
-          🛒 Add to Cart
-        </button>
+if(error){
 
-        <button onclick="buyNow(\`${p.name}\`, ${p.price})">
-          🟢 Buy Now
-        </button>
+console.log(error);
 
-      </div>
-    `;
-  });
+return;
+
 }
+
+
+
+products=data || [];
+
+
+box.innerHTML="";
+
+
+
+if(products.length===0){
+
+const empty=document.getElementById("emptyMessage");
+
+if(empty){
+
+empty.innerText="No Products Available";
+
+}
+
+return;
+
+}
+
+
+
+products.forEach(p=>{
+
+
+box.innerHTML += `
+
+
+<div class="card"
+onclick="openProduct('${p.id}')"
+style="cursor:pointer;">
+
+
+
+<img src="${p.image}" class="product-img">
+
+
+
+<h3>${p.name}</h3>
+
+
+
+<p>${p.description}</p>
+
+
+
+<p><b>Rs ${p.price}</b></p>
+
+
+
+
+<button onclick="event.stopPropagation(); addToCart('${escapeText(p.name)}',${p.price},'${p.image}')">
+
+🛒 Add to Cart
+
+</button>
+
+
+
+
+<button onclick="event.stopPropagation(); buyNow('${escapeText(p.name)}',${p.price})">
+
+🟢 Buy Now
+
+</button>
+
+
+
+
+<button onclick="event.stopPropagation(); addWishlist('${escapeText(p.name)}',${p.price},'${p.image}')">
+
+❤️ Wishlist
+
+</button>
+
+
+
+</div>
+
+
+`;
+
+
+
+});
+
+
+
+}
+
+
 
 /* =========================
-   IMAGE SLIDER (FIXED)
+   ESCAPE TEXT
 ========================= */
-function changeImage(btn, dir) {
 
-  const slider = btn.parentElement;
-  const images = slider.querySelectorAll("img");
+function escapeText(text){
 
-  let index = parseInt(slider.getAttribute("data-index")) || 0;
+return text.replace(/'/g,"\\'");
 
-  images[index].classList.remove("active");
-
-  index += dir;
-
-  if (index < 0) index = images.length - 1;
-  if (index >= images.length) index = 0;
-
-  images[index].classList.add("active");
-
-  slider.setAttribute("data-index", index);
 }
+
+
+
+/* =========================
+   OPEN PRODUCT DETAIL
+========================= */
+
+function openProduct(id){
+
+window.location.href =
+"pages/product.html?id="+id;
+
+}
+
+
+
+
+
+/* =========================
+   WISHLIST
+========================= */
+
+function addWishlist(name,price,image){
+
+
+wishlist.push({
+
+name:name,
+
+price:price,
+
+image:image
+
+});
+
+
+localStorage.setItem(
+
+"wishlist",
+
+JSON.stringify(wishlist)
+
+);
+
+
+
+alert("❤️ Added to Wishlist");
+
+
+}
+
+
+
 
 /* =========================
    LOAD CART
 ========================= */
-function loadCart() {
 
-  const box = document.getElementById("cartItems");
-  if (!box) return;
 
-  box.innerHTML = "";
+function loadCart(){
 
-  let total = 0;
 
-  cart.forEach((item, i) => {
+const box=document.getElementById("cartItems");
 
-    total += Number(item.price);
 
-    box.innerHTML += `
-      <div class="card">
+if(!box) return;
 
-        <img src="${item.image}" alt="cart item">
 
-        <h3>${item.name}</h3>
 
-        <p>Rs ${item.price}</p>
+box.innerHTML="";
 
-        <button onclick="removeItem(${i})">
-          Remove
-        </button>
 
-      </div>
-    `;
-  });
+let total=0;
 
-  box.innerHTML += `<h2>Total: Rs ${total}</h2>`;
+
+
+cart.forEach((item,index)=>{
+
+
+total += Number(item.price);
+
+
+
+box.innerHTML += `
+
+
+<div class="card">
+
+
+<img src="${item.image}" class="product-img">
+
+
+
+<h3>${item.name}</h3>
+
+
+
+<p>Rs ${item.price}</p>
+
+
+
+<button onclick="removeItem(${index})">
+
+❌ Remove
+
+</button>
+
+
+</div>
+
+
+`;
+
+
+
+});
+
+
+
+const totalBox=document.getElementById("cartTotal");
+
+
+if(totalBox){
+
+totalBox.innerText="Total: Rs "+total;
+
 }
 
-/* =========================
-   REMOVE ITEM
-========================= */
-function removeItem(i) {
 
-  cart.splice(i, 1);
 
-  localStorage.setItem("cart", JSON.stringify(cart));
-
-  loadCart();
-
-  updateCartCount();
 }
 
+
+
+
 /* =========================
-   SEARCH
+ REMOVE CART ITEM
 ========================= */
-function searchProducts() {
 
-  const input = document.getElementById("searchInput");
-  if (!input) return;
 
-  const filter = input.value.toLowerCase();
+function removeItem(index){
 
-  const cards = document.querySelectorAll(".card");
 
-  cards.forEach(card => {
+cart.splice(index,1);
 
-    const text = card.innerText.toLowerCase();
 
-    card.style.display = text.includes(filter)
-      ? "block"
-      : "none";
-  });
+
+localStorage.setItem(
+
+"cart",
+
+JSON.stringify(cart)
+
+);
+
+
+
+loadCart();
+
+
+updateCartCount();
+
+
+
 }
 
+
+
+
+
 /* =========================
-   INIT
+ SEARCH
 ========================= */
-window.onload = function () {
 
-  updateCartCount();
 
-  loadProducts();
+function searchProducts(){
 
-  loadCart();
+
+const input=document.getElementById("searchInput");
+
+
+if(!input) return;
+
+
+
+const value=input.value.toLowerCase();
+
+
+
+document.querySelectorAll(".card").forEach(card=>{
+
+
+card.style.display =
+
+card.innerText.toLowerCase().includes(value)
+
+?"block"
+
+:"none";
+
+
+});
+
+
+}
+
+
+
+
+
+/* =========================
+ START
+========================= */
+
+
+window.onload=function(){
+
+
+updateCartCount();
+
+
+loadProducts();
+
+
+loadCart();
+
+
 };
